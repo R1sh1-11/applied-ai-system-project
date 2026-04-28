@@ -1,154 +1,110 @@
-# 🎧 Model Card: Music Recommender Simulation
+# 🎧 Model Card — VibeFinder 2.0
 
-## 1. Model Name  : AtTUNEment
+## 1. Model Name
 
----
-
-## 2. Intended Use  
-
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-  It generates a ranked list of the top 5 songs from a small catalog based on how well they match a user's taste profile.
-
-- What assumptions does it make about the user  
-  It assumes the user cares most about genre, then mood, then energy level and that these preferences don't change over time.
-
-- Is this for real users or classroom exploration  
-  This is for classroom exploration only, not for real users or production use.
+> **VibeFinder 2.0** — Agentic Music Recommender System
 
 ---
 
-## 3. How the Model Works  
+## 2. Intended Use
 
-Explain your scoring approach in simple language.  
-
-Prompts:  
-
-- What features of each song are used (genre, energy, mood, etc.)  
-  The system looks at genre, mood, energy, and acousticness for each song.
-
-- What user preferences are considered  
-  The user provides their favorite genre, preferred mood, a target energy level (0.0–1.0), and whether they like acoustic music.
-
-- How does the model turn those into a score  
-  It awards +2.0 points for a genre match, +1.0 for a mood match, up to +1.0 based on how close the song's energy is to the user's target, and +0.5 if the user likes acoustic and the song's acousticness is above 0.7. All points are added up into a final score.
-
-- What changes did you make from the starter logic  
-  The starter code had empty TODO functions. I implemented the full scoring recipe with weighted points and added explanation strings so each recommendation shows why it was picked.
+This system generates playlists from natural language requests using an agentic workflow. It is designed for classroom exploration and portfolio demonstration — not for real music streaming users. The system demonstrates how AI agents can plan, execute, evaluate, and revise their outputs through structured reasoning.
 
 ---
 
-## 4. Data  
+## 3. How It Works (Short Explanation)
 
-Describe the dataset the model uses.  
+When a user types a request like "make me a workout playlist that starts chill and builds up," the system:
 
-Prompts:  
+1. **Parses** the request to detect the user's intent — is this an energy arc (build-up/wind-down), a mood journey (happy → sad), a genre mix (EDM + rock), or a simple mood/genre filter?
+2. **Plans** a series of retrieval steps based on the intent. For a build-up, it plans three steps: retrieve low-energy songs, medium-energy songs, and high-energy songs.
+3. **Retrieves** songs from the catalog using tag-based filtering (genre, mood, energy range) and scores them with a weighted formula.
+4. **Sequences** the songs according to the intent — ascending energy for build-ups, interleaved genres for mixes, etc.
+5. **Evaluates** the playlist against five quality checks: correct length, genre diversity, energy flow, no duplicates, and mood alignment.
+6. **Revises** if the evaluation fails — it might swap songs, re-sort, or fill gaps — up to 2 times.
 
-- How many songs are in the catalog  
-  18 songs total.
-
-- What genres or moods are represented  
-  Genres include pop, lofi, rock, ambient, jazz, synthwave, indie pop, r&b, edm, folk, hip-hop, classical, world, and indie rock. Moods include happy, chill, intense, focused, relaxed, moody, romantic, melancholy, and aggressive.
-
-- Did you add or remove data  
-  I added 8 songs to the original 10 to cover genres and moods that were missing from the starter dataset.
-
-- Are there parts of musical taste missing in the dataset  
-  Yes. There's no country, metal, reggae, or Latin music, and most genres only have one or two songs, which limits variety.
+No external AI API is used. The reasoning is rule-based, making every decision transparent and testable.
 
 ---
 
-## 5. Strengths  
+## 4. Data
 
-Where does your system seem to work well  
+The song catalog contains **30 songs** stored in `data/songs.csv`. Each song has 8 features: genre, mood, energy (0.0–1.0), tempo (BPM), valence (0.0–1.0), danceability (0.0–1.0), and acousticness (0.0–1.0).
 
-Prompts:  
+The catalog spans **14 genres** (pop, rock, lofi, edm, jazz, folk, hip-hop, classical, ambient, synthwave, indie pop, indie rock, r&b, world) and **6 moods** (happy, chill, melancholy, intense, aggressive, romantic).
 
-- User types for which it gives reasonable results  
-  Users with clear, specific tastes like "chill lofi" or "intense rock" get strong results with high-confidence scores.
-
-- Any patterns you think your scoring captures correctly  
-  The energy similarity formula rewards songs that are close to the user's target rather than just high-energy songs, which feels fair.
-
-- Cases where the recommendations matched your intuition  
-  The Chill Lofi Listener got Midnight Coding and Library Rain as top picks, which genuinely feels like what Spotify would suggest for that vibe.
+The data was hand-curated, so it reflects a particular taste — genres like pop and rock have more representation (4–5 songs) while classical and hip-hop have only 1–2 songs each. This creates an inherent bias toward well-represented genres.
 
 ---
 
-## 6. Limitations and Bias 
+## 5. Strengths
 
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-  Tempo, valence, and danceability are in the CSV but never used in scoring, so the system ignores potentially useful information.
-
-- Genres or moods that are underrepresented  
-  Rock, classical, folk, and several other genres only have one song each, so users who prefer those genres get almost no variety.
-
-- Cases where the system overfits to one preference  
-  Genre carries +2.0 points, which means a song in the "right" genre can beat a perfect mood and energy match in the "wrong" genre. Gym Hero ranked #2 for Happy Pop Fan even though its mood is "intense," not "happy."
-
-- Ways the scoring might unintentionally favor some users  
-  Users who like lofi get three songs to choose from while users who like classical only get one, so the system gives better results to some tastes purely because of dataset size.
+- **Transparency**: Every decision is logged in a reasoning trace. Users can see exactly why each song was chosen and how the playlist was sequenced.
+- **Self-correction**: The evaluation + revision loop catches issues like missing songs, genre domination, and incorrect energy ordering.
+- **Flexible intent handling**: The system understands 4 distinct intent types from natural language, covering most common playlist requests.
+- **No dependencies**: Runs entirely locally with no API keys, network access, or paid services.
+- **Testable**: 25 unit tests and a 10-scenario evaluation harness verify the system's behavior systematically.
 
 ---
 
-## 7. Evaluation  
+## 6. Limitations and Bias
 
-How you checked whether the recommender behaved as expected. 
-
-Prompts:  
-
-- Which user profiles you tested  
-  Five profiles: Happy Pop Fan, Chill Lofi Listener, Intense Rock Lover, Sad But Energetic (edge case), and Quiet Classical Fan (edge case).
-
-- What you looked for in the recommendations  
-  Whether the top results matched the user's stated preferences and whether the scores and explanations made logical sense.
-
-- What surprised you  
-  The "Sad But Energetic" profile completely ignored the melancholy mood because the only melancholy song had low energy and the system just fell back to genre and energy matching.
-
-- Any simple tests or comparisons you ran  
-  I ran a weight experiment where I halved the genre weight (2.0 - 1.0) and doubled the energy weight (1.0 - 2.0). This caused Rooftop Lights to jump above Gym Hero for the Pop Fan, showing the rankings are very sensitive to weight changes.
+- **Small catalog bias**: With only 30 songs, some genres (classical, hip-hop) have very few options. A user who requests "10 classical songs" will only get 1, with the rest filled by tangentially related songs.
+- **Genre weight dominance**: The +2.0 genre weight means genre match overwhelms other factors. A perfect mood + energy match in the "wrong" genre scores lower than a mediocre match in the right genre.
+- **Keyword-only NLP**: The parser relies on predefined keyword lists. It can't understand negation ("not rock"), comparatives ("more upbeat than jazz"), or entirely novel descriptions.
+- **Western-centric catalog**: The song selection skews toward English-language, Western genres. "World" music is represented by a single song, which is a gross oversimplification.
+- **No personalization over time**: The system has no memory of past interactions. Each request starts from scratch with no learning from user feedback.
+- **If used in a real product**, the static keyword matching could frustrate users whose requests don't align with the predefined vocabulary, creating a gap between what users expect and what the system can deliver.
 
 ---
 
-## 8. Future Work  
+## 7. Evaluation
 
-Ideas for how you would improve the model next.  
+### Unit Tests
+25 tests cover:
+- Score computation (genre match scores higher, mood adds points, energy similarity, acoustic bonus)
+- Recommender behavior (correct count, sorted order, reason generation)
+- Tag search (filter by genre, mood, energy range, combined filters, empty results)
+- Agent behavior (intent detection for all 4 types, no duplicates, evaluation runs, energy ordering, vague request handling)
+- Catalog statistics
 
-Prompts:  
+**Result: 25/25 passed**
 
-- Additional features or preferences  
-  Add valence, danceability, and tempo into the scoring so the system understands songs more deeply.
+### Evaluation Harness
+10 automated scenarios test diverse request types:
 
-- Better ways to explain recommendations  
-  Show users what they're missing — like "You might also like this song even though it's a different genre, because the mood and energy are a perfect match."
+| Test Case | Confidence | Notes |
+|-----------|-----------|-------|
+| Simple chill request | 100% | Perfect match |
+| Energy build-up | 100% | Correct ascending energy |
+| Energy wind-down | 100% | Correct descending energy |
+| Happy pop request | 100% | Genre + mood alignment |
+| Mood journey | 100% | Multi-mood detection |
+| Genre mix | 100% | EDM + rock interleaving |
+| Workout request | 100% | Intense intent detected |
+| Romantic evening | 80% | Classified as mood_journey instead of simple |
+| Vague request | 100% | Graceful fallback |
+| Large playlist | 75% | Got 7/10 songs (catalog limit) |
 
-- Improving diversity among the top results  
-  Add a diversity penalty so the top 5 can't all be from the same artist or genre.
-
-- Handling more complex user tastes  
-  Let users set their own weights for how much genre, mood, and energy matter to them instead of using fixed values.
+**Result: 10/10 passed, 96% average confidence, 0 revisions needed**
 
 ---
 
-## 9. Personal Reflection  
+## 8. Future Work
 
-A few sentences about your experience.  
+- **Add collaborative filtering**: Track which songs tend to be enjoyed together and use that as a signal.
+- **Expand the catalog**: Use a real music API (Spotify, Last.fm) to access thousands of songs with real audio features.
+- **Learn from feedback**: Let users thumbs-up/down songs and adjust weights over time.
+- **Add diversity constraints**: Ensure the agent doesn't always recommend the same songs for similar requests (inject controlled randomness).
+- **Support negation**: Parse "not rock" or "no sad songs" in the request.
+- **Multi-user playlists**: Generate group playlists that balance multiple people's preferences.
 
-Prompts:  
+---
 
-- What you learned about recommender systems  
-  Even a simple algorithm with just four rules can produce recommendations that actually feel right, which made me realize real apps are doing the same thing at a much bigger scale.
+## 9. Personal Reflection
 
-- Something unexpected or interesting you discovered  
-  The edge case testing showed how easily the system breaks when preferences contradict each other/it just silently ignores the parts it can't satisfy.
+Building the agentic workflow was the most educational part of this project. In Module 3, the recommender was a single function — score and sort. Adding the planning and evaluation layers forced me to think about *what makes a good playlist* beyond just individual song scores. The sequencing matters (energy flow), the diversity matters (not all one genre), and the alignment with the original request matters. These are the kinds of quality criteria that real AI products need to define and enforce.
 
-- How this changed the way you think about music recommendation apps  
-  I now think about what data Spotify is actually using when it suggests a song, and I realize there are probably hundreds of features and weights behind every recommendation, not just genre and mood.
+I was surprised that the rule-based approach worked as well as it did. The keyword parser correctly handles most natural phrasings, and the self-evaluation caught issues I would have missed manually. This taught me that "AI" doesn't always mean "neural network" — structured reasoning with clear rules can be powerful and, importantly, fully explainable.
+
+The biggest lesson: the hardest part of building AI isn't the algorithm — it's defining what "good" means and building systems to measure it.
