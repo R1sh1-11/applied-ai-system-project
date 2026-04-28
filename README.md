@@ -252,7 +252,7 @@ I was surprised how well the keyword-based parser handled varied phrasing. "Star
 
 ## Demo Walkthrough
 
-> **Loom video link:** *(Add your Loom recording link here)*
+> **Loom video link:** *(https://www.loom.com/share/f9af6d23b93b41ed99f1a12ce4d88e8e)*
 
 ---
 
