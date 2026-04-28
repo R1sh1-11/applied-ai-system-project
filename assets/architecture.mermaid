@@ -1,0 +1,46 @@
+graph TD
+    subgraph Input
+        A["🎵 User Request<br/>(natural language)"]
+    end
+
+    subgraph Agent["🤖 Playlist Agent (agent.py)"]
+        B["PLAN<br/>Parse intent, moods,<br/>genres, energy arc"]
+        C["EXECUTE<br/>Retrieve songs via<br/>tag search + scoring"]
+        D["SEQUENCE<br/>Order songs by<br/>energy flow/variety"]
+        E["EVALUATE<br/>Self-check quality:<br/>length, diversity,<br/>energy flow, duplicates"]
+        F{"Pass?"}
+        G["REVISE<br/>Fix issues: swap songs,<br/>re-sort, fill gaps"]
+    end
+
+    subgraph Core["🎶 Scoring Engine (recommender.py)"]
+        H["Tag Search<br/>Filter by genre,<br/>mood, energy range"]
+        I["Score Songs<br/>Genre +2.0, Mood +1.0,<br/>Energy ~1.0, Acoustic +0.5"]
+    end
+
+    subgraph Data["📦 Data Layer (models.py)"]
+        J["Song Catalog<br/>30 songs, 14 genres,<br/>6 moods"]
+        K["User Profile<br/>genre, mood, energy,<br/>likes_acoustic"]
+    end
+
+    subgraph Output
+        L["📋 Final Playlist<br/>+ Reasoning Trace"]
+    end
+
+    A --> B
+    B --> C
+    C --> H
+    H --> J
+    C --> I
+    I --> K
+    C --> D
+    D --> E
+    E --> F
+    F -- "Yes" --> L
+    F -- "No" --> G
+    G --> C
+
+    style Agent fill:#1a1a2e,color:#e0e0e0,stroke:#00d4ff
+    style Core fill:#16213e,color:#e0e0e0,stroke:#0f3460
+    style Data fill:#0f3460,color:#e0e0e0,stroke:#533483
+    style Input fill:#533483,color:#e0e0e0,stroke:#e94560
+    style Output fill:#e94560,color:#fff,stroke:#e94560
