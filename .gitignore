@@ -1,15 +1,7 @@
-# Byte compiled
 __pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual environments
+*.pyc
 .venv/
-env/
-venv/
-
-# OS files
-.DS_Store
-
-# Pytest cache
+*.egg-info/
 .pytest_cache/
+vibefinder.log
+.DS_Store
